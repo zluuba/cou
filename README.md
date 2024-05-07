@@ -2,7 +2,7 @@
 CLI utility that counts lines of code within files, analyzes directories containing code, and provides a concise summary.
 
 ## Usage:
-`cou [options]`
+`cou [options] path/to/files`
 
 
 options:
@@ -11,8 +11,8 @@ options:
 - c - comments
 - e - empty lines
 - f - files
-- l - specify programming language (file extension or full name - in every case (lower, upper)) 
-      to count files only with that lang (ex.: rc,py | rust,python | C,JavaScript)
+- l - language (specify programming language, file extension or full name - in every case (lower, upper), 
+      to count files only with that lang, ex.: rc,py | rust,python | C,JavaScript)
 - r - in range (ex.: 10,1000)
 - s - search for
 
@@ -31,6 +31,12 @@ options:
 - `cou -fr {start_num,finish_num}` - counting files with code where lines count from {start_num} to {finish_num} (not included).
 
 or did `cou files [options]`
+
+
+### Files
+- `cou files -h` - print help man.
+- `cou files .` - print help man.
+- `cou . files -r 10,1000` - search files where lines of code placed in range [10, 1000].
 
 
 ### Code
