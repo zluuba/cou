@@ -3,5 +3,6 @@
 .idea/
 
 # local dev files
+/venv
 /build
 *.egg-info
