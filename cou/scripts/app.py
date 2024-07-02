@@ -1,6 +1,10 @@
+from asyncio import run
 from cou.args_parser import parse_args
+from cou.core import count_lines
 
 
-def main():
+def main() -> None:
     args = parse_args()
-    print(args)
+
+    total_lines = run(count_lines(args.path))
+    print(f'Path {args.path} contains {total_lines} lines of code.')
