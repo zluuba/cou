@@ -1,10 +1,15 @@
-from asyncio import run
+from colorama import init
 from cou.args_parser import parse_args
-from cou.core import count_lines
+from cou.report import Report
+from cou.report_viewer import ReportViewer
 
 
 def main() -> None:
+    init(autoreset=True)
     args = parse_args()
 
-    total_lines = run(count_lines(args.path))
-    print(f'Path {args.path} contains {total_lines} lines of code.')
+    report = Report(args)
+    report.generate()
+
+    viewer = ReportViewer(report)
+    viewer.show_report_data()
