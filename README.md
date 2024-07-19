@@ -1,21 +1,22 @@
 # cou
 CLI utility that counts lines of code within files, analyzes directories containing code, and provides a concise summary.
 
-## Usage:
+## Usage
 `cou path [options]`
 
 
 Options:
-- [-l, --list], list of files with lines of code count.
-- [-s, --statistic], shows statistic: total num of lines of code, total num of dirs and files, all languages that
-                     used, lines per language.
-- [-e, --exclude], counts lines of code, excluding selected files/dirs (space-separated, at least one file/dir).
-- [-m, --multy], count lines of code in chosen files/dirs (space-separated, at least one file/dir).
+- `[path]`, required, should contain at least one dir/file, if there are more than one, 
+          paths should be separated by spaces like `cou path1 path2 path3`.
+- `[-l, --list]`, list of files with lines of code count.
+- `[-s, --statistic]`, shows statistic: total num of lines of code, total num of dirs and files, 
+                     all languages that used, lines per language.
+- `[-e, --exclude]`, counts lines of code, excluding selected files/dirs (space-separated, at least one file/dir).
 
 
 To Do:
 - exclude from files search hidden dirs like .git, .venv
-- add [-t, -tree] option ([-t, --tree], shows project tree with number of lines of code)
+- add [-t, -tree] option (shows project tree with number of lines of code)
 
 
 
@@ -31,6 +32,18 @@ cou .
 # output
 Processing files: 100%|█████████████████████████████| 760/760 [00:00<00:00, 5591.07file/s]
 Path "/users/foo/projects" contains 237158 lines of code.
+```
+
+```python
+# walk through all files in './bar' and './baz' directories, count lines of code in files with code 
+# and shows total number of lines of code
+
+# input
+cou bar baz
+
+# output
+Processing files: 100%|█████████████████████████████| 760/760 [00:00<00:00, 5591.07file/s]
+Paths "/users/foo/projects/bar", "/users/foo/projects/baz" contains 237158 lines of code.
 ```
 
 ```python
@@ -74,17 +87,5 @@ cou . -e bar baz/setup.py
 # output
 Processing files: 100%|█████████████████████████████| 743/743 [00:00<00:00, 5591.07file/s]
 Path "/users/foo/projects" contains 212090 lines of code.
-...
-```
-
-```python
-# shows total number of lines of code in './bar' and './baz' directories
-
-# input
-cou . -m bar baz
-
-# output
-Processing files: 100%|█████████████████████████████| 209/209 [00:00<00:00, 5591.07file/s]
-Path "/users/foo/projects" contains 12318 lines of code.
 ...
 ```
