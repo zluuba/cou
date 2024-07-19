@@ -1,8 +1,5 @@
 # cou
-CLI utility that counts lines of code within files, analyzes directories containing code, and provides a concise summary.  
-  
-Cou count lines quite fast, for example: 30.000 files and 10.000.000 lines of code it count for 5 seconds. 
-Regular pet-projects cou count for less than 1 second.
+CLI utility that counts lines of code within files, analyzes directories containing code, and provides a concise summary.
 
 ## Usage:
 `cou path [options]`
@@ -24,7 +21,7 @@ To Do:
 
 ## Examples
 
-```commandline
+```python
 # walk through all files in current directory, count lines of code in files with code 
 # and shows total number of lines of code
 
@@ -36,7 +33,7 @@ Processing files: 100%|███████████████████
 Path "/users/foo/projects" contains 237158 lines of code.
 ```
 
-```commandline
+```python
 # shows list of files with number of code in it
 
 # input
@@ -51,7 +48,7 @@ File "/users/foo/projects/bar/utils.py" contain 809 lines of code;
 ...
 ```
 
-```commandline
+```python
 # analyze current directory and show statistic
 
 # input
@@ -68,7 +65,7 @@ Languages:
 
 ```
 
-```commandline
+```python
 # shows total number of lines of code in current directory, excluding './bar' dir and './baz/setup.py' file
 
 # input
@@ -80,7 +77,7 @@ Path "/users/foo/projects" contains 212090 lines of code.
 ...
 ```
 
-```commandline
+```python
 # shows total number of lines of code in './bar' and './baz' directories
 
 # input
