@@ -1,45 +1,39 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 
-def parse_args():
+def parse_args() -> Namespace | None:
     parser = ArgumentParser(
         prog='cou',
-        description='Counts lines of code within files and analyzes code in files.',
+        description='Counts lines of code within files and '
+                    'show statistic.',
     )
 
-    # cou path [options]
     parser.add_argument('path',
                         help='path to the file or directory')
-    parser.add_argument('-c', '--comments',
-                        action='store_true',
-                        help='count lines with comments')
-    parser.add_argument('-e', '--empty-lines',
-                        action='store_true',
-                        help='count lines with empty lines')
 
-    # subparsers = parser.add_subparsers(help='sub-commands for files and code analyzing')
-    #
-    # parser_files = subparsers.add_parser('files',
-    #                                      help='count files with code')
-    # parser_files.add_argument('path',
-    #                           help='path to the file or directory')
-    # parser_files.add_argument('-r', '--range',
-    #                           action='store',
-    #                           help='show files where lines of code in range [start,stop]')
-    #
-    # parser_code = subparsers.add_parser('code',
-    #                                     help='analyze files with code')
-    # parser_code.add_argument('path',
-    #                          help='path to the file or directory')
-    # parser_code.add_argument('-f', '--full',
-    #                          action='store_true',
-    #                          help='show full info about files with code')
+    parser.add_argument('-l', '--list',
+                        action='store_true',
+                        help='show lines of code per each file')
+
+    parser.add_argument('-s', '--statistic',
+                        action='store_true',
+                        help='show statistics: total num of lines of code, '
+                             'total num of dirs and files, all languages '
+                             'that used, lines per language and percentage')
+
+    parser.add_argument('-e', '--exclude',
+                        action="extend",
+                        nargs='+',
+                        type=str,
+                        help='receive space-separated files/dirs and '
+                             'count lines excluding them')
+
+    parser.add_argument('-m', '--multy',
+                        action="extend",
+                        nargs='+',
+                        type=str,
+                        help='receive space-separated files/dirs and '
+                             'analyze only them')
 
     args = parser.parse_args()
-    all_args = vars(args)
-
-    if not all_args:
-        parser.print_help()
-        return
-
     return args
