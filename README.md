@@ -6,16 +6,14 @@ CLI utility that counts lines of code within files, analyzes directories contain
 
 
 Options:
-- `[path]`, required, should contain at least one dir/file, if there are more than one, 
-          paths should be separated by spaces like `cou path1 path2 path3`.
-- `[-l, --list]`, list of files with lines of code count.
-- `[-s, --statistic]`, shows statistic: total num of lines of code, total num of dirs and files, 
-                     all languages that used, lines per language.
-- `[-e, --exclude]`, counts lines of code, excluding selected files/dirs (space-separated, at least one file/dir).
+- `[path]`, required, should contain at least one dir/file, if there are more than one, paths should be separated by spaces like `cou path1 path2 path3`.
+- `[-l, --list]`, list of files with lines of code count. Default state: false.
+- `[-s, --statistic]`, shows statistic: total num of dirs and files, all languages that used, lines per language. Default state: false.
+- `[-e, --exclude]`, counts lines of code, excluding selected files/dirs (space-separated, at least one file/dir). Default state: none.
 
 
 To Do:
-- exclude from files search hidden dirs like .git, .venv
+- exclude hidden dirs (like .git, .venv) from files search
 - add [-t, -tree] option (shows project tree with number of lines of code)
 
 
