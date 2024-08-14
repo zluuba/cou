@@ -12,7 +12,7 @@ AUTHOR_EMAIL = 'zluyba.nikitina@gmail.com'
 PYTHON_REQUIRES = '>=3.11'
 
 ENTRY_POINTS = {
-    'console_scripts': ['cou=cou.scripts.app:main'],
+    'console_scripts': ['cou=cou.cli.app:main'],
 }
 CLASSIFIERS = [
     'Environment :: Console',
