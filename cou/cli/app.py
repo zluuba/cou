@@ -3,10 +3,21 @@ from colorama import init as init_colors
 
 from cou.cli.config import Config
 from cou.core.report_collection import ReportCollection
+from cou.errors.decorators import suppress_traceback
 from cou.viewers.report_viewer import ReportViewer
 
 
+@suppress_traceback
 def main() -> None:
+    """
+    Entry point of the cou CLI app.
+
+    This function initializes color support for the terminal,
+    parses command-line arguments, generates reports on the
+    provided paths, and displays the results using the specified
+    view strategy.
+    """
+
     init_colors(autoreset=True)
 
     config = Config()
