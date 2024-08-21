@@ -1,52 +1,59 @@
 from asyncio import gather, Semaphore
 from pathlib import Path
-from typing import List, Optional, Dict
-from collections import defaultdict
+from typing import List, Optional
 
-from cou.core.file import CodeFile
+from cou.core.file import File
+from cou.core.directory import Directory
+from cou.errors.decorators import catch_file_errors
 from cou.errors.exceptions import PathDoesNotExist, NoFilesToCount
-from cou.utils.progress import get_progress_bar
-
-
-class DirStats:
-    def __init__(self, name: str):
-        self.name: str = name
-        self.files: List[CodeFile] = []
-        self.subdirs: Dict[str, 'DirStats'] = {}
-        self.lines_of_code: int = 0
-
-    @property
-    def file_count(self) -> int:
-        return len(self.files) + sum(subdir.file_count for subdir in self.subdirs.values())
-
-    @property
-    def dir_count(self) -> int:
-        return len(self.subdirs) + sum(subdir.dir_count for subdir in self.subdirs.values())
+from cou.utils.progress_bar import get_progress_bar
 
 
 class Report:
+    """
+    Represents a report that collects and processes information about
+    files and directories, including counting lines of code and tracking errors.
+    """
+
     def __init__(self, path: Path, excluded_dirs: List[str] = None):
         self.path: Path = path
         self.excluded_dirs: List[str] = excluded_dirs or []
 
-        self._file_tree: Optional[DirStats] = None
-        self._files: Optional[List[CodeFile]] = None
-        self._broken_files: List[CodeFile] = []
+        self._file_tree: Optional[Directory] = None
+        self._files: Optional[List[File]] = None
+        self._broken_files: List[File] = []
         self._errors: List[Exception] = []
 
     async def generate(self, concurrency_limit: int = 10) -> None:
+        """
+        Generate the report by processing the files and directories.
+
+        Args:
+            concurrency_limit (int, optional): The maximum number of
+            concurrent file operations.
+
+        Raises:
+            PathDoesNotExist: If the specified path does not exist.
+            NoFilesToCount: If no files are found to process.
+        """
+
         if not self.path.exists():
-            raise PathDoesNotExist(f"Path {self.path} does not exist.")
+            raise PathDoesNotExist(self.path)
 
         await self._collect_files()
 
         if not self._files:
-            raise NoFilesToCount(f"Path {self.path} does not contain any files with code.")
+            raise NoFilesToCount(self.path)
 
         await self._count_lines_of_code(concurrency_limit)
 
     async def _collect_files(self) -> None:
-        self._file_tree = DirStats(self.path.name)
+        """
+        Collect files and directories from the specified path
+        and populate the file tree.
+        """
+
+        self._file_tree = Directory(self.path.name)
         self._files = []
 
         if self.path.is_file():
@@ -54,60 +61,81 @@ class Report:
         else:
             await self._process_directory(self.path, self._file_tree)
 
-    async def _process_directory(self, dir_path: Path, dir_stats: DirStats) -> None:
-        if dir_path.name.startswith('.') or dir_path.name in self.excluded_dirs:
+    async def _process_directory(self, dir_path: Path, directory: Directory) -> None:
+        """
+        Recursively process a directory and its contents.
+
+        Args:
+            dir_path (Path): The directory path to process.
+            directory (Directory): The directory object to populate.
+        """
+
+        if dir_path.name.startswith('.') or (dir_path.name in self.excluded_dirs):
             return
 
         tasks = []
 
         for item in dir_path.iterdir():
             if item.is_file():
-                tasks.append(self._process_file(item, dir_stats))
+                tasks.append(self._process_file(item, directory))
             elif item.is_dir():
-                subdir_stats = DirStats(item.name)
-                dir_stats.subdirs[item.name] = subdir_stats
+                if item.name.startswith('.') or (item.name in self.excluded_dirs):
+                    continue
+
+                subdir_stats = Directory(item.name)
+                directory.subdirs[item.name] = subdir_stats
                 tasks.append(self._process_directory(item, subdir_stats))
 
         await gather(*tasks)
 
-    async def _process_file(self, file_path: Path, dir_stats: DirStats) -> None:
-        file = CodeFile(file_path)
+    async def _process_file(self, file_path: Path, directory: Directory) -> None:
+        """
+        Process a single file, validating it and adding it to the appropriate lists.
+
+        Args:
+            file_path (Path): The file path to process.
+            directory (Directory): The directory object to add the file to.
+        """
+
+        file = File(file_path)
         await file.validate()
 
         if file.is_valid:
             self._files.append(file)
-            dir_stats.files.append(file)
+            directory.files.append(file)
         else:
             self._broken_files.append(file)
 
     async def _count_lines_of_code(self, concurrency_limit: int) -> None:
+        """
+        Count the lines of code in the collected files
+        using a semaphore for concurrency control.
+        """
+
         semaphore = Semaphore(concurrency_limit)
         progress_bar = get_progress_bar(len(self._files))
 
-        async def count_with_progress(file: CodeFile):
+        @catch_file_errors
+        async def count_with_progress(file: File, _progress_bar):
             async with semaphore:
-                try:
-                    await file.count_lines()
-                    self._update_dir_lines(file)
-                except Exception as e:
-                    self._errors.append(e)
-                finally:
-                    progress_bar.update(1)
+                await file.count_lines()
+                _progress_bar.update(1)
 
-        await gather(*[count_with_progress(file) for file in self._files])
+        await gather(*[count_with_progress(file, progress_bar) for file in self._files])
         progress_bar.close()
 
-    def _update_dir_lines(self, file: CodeFile) -> None:
-        current = self._file_tree
-        for part in file.path.relative_to(self.path).parts[:-1]:
-            current = current.subdirs[part]
-        current.lines_of_code += file.lines_of_code
-
     @property
-    def files(self) -> List[CodeFile]:
+    def files(self) -> List[File]:
+        """Get the list of valid files collected in the report."""
+
         if self._files is None:
             raise ValueError("Report has not been generated yet.")
+
         return self._files
+
+    @property
+    def file_tree(self) -> Directory:
+        return self._file_tree
 
     @property
     def errors(self) -> List[Exception]:
@@ -124,17 +152,3 @@ class Report:
     @property
     def total_dir_count(self) -> int:
         return self._file_tree.dir_count if self._file_tree else 0
-
-    def get_lines_by_dir(self, dir_path: str = "") -> Dict[str, int]:
-        current = self._file_tree
-        for part in Path(dir_path).parts:
-            if part not in current.subdirs:
-                return {}
-            current = current.subdirs[part]
-
-        result = {dir_path: current.lines_of_code}
-        for subdir, stats in current.subdirs.items():
-            subdir_path = str(Path(dir_path) / subdir)
-            result[subdir_path] = stats.lines_of_code
-
-        return result
