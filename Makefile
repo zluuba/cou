@@ -6,3 +6,6 @@ reinstall:
 
 uninstall:
 	python3 -m pip uninstall cou
+
+test:
+	pytest .

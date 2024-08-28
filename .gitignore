@@ -6,3 +6,6 @@
 /venv
 /build
 *.egg-info
+
+# pytest files
+__pycache__
